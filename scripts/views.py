@@ -10,3 +10,5 @@ class ScriptsViewSet(viewsets.ModelViewSet):
     queryset = Scripts.objects.all()
     serializer_class = ScriptsSerializers
     permission_classes = (permissions.IsAuthenticated,)
+
+

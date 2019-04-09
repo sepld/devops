@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'user.apps.UserConfig',
-    'servers.apps.ServersConfig',
     'scripts.apps.ScriptsConfig',
+    'vmware.apps.VmwareConfig',
 ]
 
 MIDDLEWARE = [
