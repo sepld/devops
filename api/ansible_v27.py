@@ -29,13 +29,23 @@ class ResultCallback(CallbackBase):
 
 
 class Options(object):
-    """
-    global options class
-    """
-
-    def __init__(self, connection='local', module_path=None, forks=None, remote_user=None, conn_pass=None,
-                 become=False, become_method=None, become_user=None, become_pass=None, check=False, diff=False,
-                 gather_facts=None):
+    def __init__(self,
+                 connection='local',
+                 module_path=None,
+                 forks=None,
+                 remote_user=None,
+                 conn_pass=None,
+                 become=False,
+                 become_method=None,
+                 become_user=None,
+                 become_pass=None,
+                 check=False,
+                 diff=False,
+                 gather_facts=None,
+                 private_key_file=None,
+                 ssh_args=None,
+                 host_key_checking=None
+                 ):
         self.connection = connection
         self.module_path = module_path
         self.forks = forks
@@ -48,35 +58,41 @@ class Options(object):
         self.check = check
         self.diff = diff
         self.gather_faces = gather_facts
+        self.private_key_file = private_key_file
+        self.ssh_args = ssh_args
+        self.host_key_checking = host_key_checking
 
-
-# # since API is constructed for CLI it expects certain options to always be set, named tuple 'fakes' the args parsing options object
-# Options = namedtuple('Options',
-#                      ['connection', 'module_path', 'forks', 'become', 'become_method', 'become_user', 'check', 'diff',
-#                       'facts', 'remote_user'])
-# options = Options(connection='smart', module_path=['/to/mymodules'], forks=10, become=True, become_method="sudo",
-#                   remote_user='ld', facts=False, become_user="root", check=False, diff=False)
 
 class BaseAnsible(object):
-    """
-
-    """
-
     def __init__(self, host_list, remote_user, conn_pass=None, become_pass=None):
         self.options = Options()
         self.options.connection = 'smart'
         self.options.gather_faces = 'no'
-        self.options.forks = 10
+        self.options.forks = 100
+        self.options.check = False
         self.options.remote_user = remote_user
         self.options.conn_pass = conn_pass
         self.options.become_pass = become_pass
+        self.options.become = True
+        self.options.become_method = 'sudo'
+        self.options.become_user = 'root'
+
+        # self.options.private_key_file = self.set_private_file()
+
         self.host_list = host_list
+
         self.loader = DataLoader()
         self.results_callback = ResultCallback()
         self.inventory = InventoryManager(loader=self.loader, sources=self.host_list)
-        self.variable_manager = VariableManager(loader=self.loader, inventory=self.inventory)
+        self.variable_manager = VariableManager(loader=self.loader,
+                                                inventory=self.inventory)
         self.play_source = None
         self.passwords = self.build_passwords()
+        C.HOST_KEY_CHECKING = False  # 关闭主机密钥检查
+
+    def set_private_file(self):
+        private_file = '/home/ld/.ssh/id_rsa'
+        return private_file
 
     def build_play_source(self, name='no', hosts='all', tasks=None):
         play_source = dict(
@@ -88,12 +104,13 @@ class BaseAnsible(object):
 
     def build_passwords(self):
         passwords = dict(
-            conn_pass=self.options.conn_pass,
+            # conn_pass=self.options.conn_pass,
             become_pass=self.options.become_pass
         )
         return passwords
 
     def run_play(self):
+
         play = Play().load(self.play_source, variable_manager=self.variable_manager, loader=self.loader)
         tqm = None
         try:
@@ -103,18 +120,15 @@ class BaseAnsible(object):
                 loader=self.loader,
                 options=self.options,
                 passwords=self.passwords,
-                stdout_callback=self.results_callback,
-                # Use our custom callback instead of the ``default`` callback plugin, which prints to stdout
+                # stdout_callback=self.results_callback,
             )
-            result = tqm.run(play)  # most interesting data for a play is actually sent to the callback's methods
+            result = tqm.run(play)
             print(result)
         finally:
 
-            # we always need to cleanup child procs and the structres we use to communicate with them
             if tqm is not None:
                 tqm.cleanup()
 
-            # Remove ansible tmpdir
             shutil.rmtree(C.DEFAULT_LOCAL_TMP, True)
 
 
@@ -122,14 +136,16 @@ if __name__ == "__main__":
     with open('/home/ld/.ssh/id_rsa.pub') as f:
         key = f.read()
 
-    ansible = BaseAnsible('119.23.230.177, ', 'ld', 'admin', 'admin')
-    ansible.options.become = True
-    ansible.options.become_method = 'sudo'
-    ansible.options.become_user = 'root'
+    hostslist = '192.168.132.129'
+    if isinstance(hostslist, str):
+        hostslist = hostslist + ','
 
+    ansible = BaseAnsible(hostslist, 'ld', '', 'admin')
+    print(ansible.options.private_key_file)
     name = 'run ping'
     tasks = [
-        dict(action=dict(module='shell', args='mkdir /etc/test')),
+        dict(action=dict(module='file', args=dict(state="directory", path="/etc/test1"))),
+        # dict(action=dict(module='ping')),
         # dict(action=dict(module='authorized_key', args=dict(user='ld', key=key))),
     ]
 

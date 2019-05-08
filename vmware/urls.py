@@ -4,8 +4,8 @@ from vmware import views
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
-router.register(r'vcenter', views.VcenterViewSet)
-router.register(r'vm', views.VMViewSet)
+# router.register(r'vcenter', views.VcenterViewSet)
+# router.register(r'vm', views.VMViewSet)
 
 urlpatterns = [
     path('', include(router.urls))

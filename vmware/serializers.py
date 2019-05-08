@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from vmware.models import Vcenter, VirtualMachine
+from vmware.models import Vcenter
 
 
 class VcenterSerializers(serializers.HyperlinkedModelSerializer):
@@ -7,10 +7,3 @@ class VcenterSerializers(serializers.HyperlinkedModelSerializer):
         model = Vcenter
         fields = ('url', 'id', 'host', 'user', 'pwd', 'port')
 
-
-class VirtualMachineSerializers(serializers.HyperlinkedModelSerializer):
-    ipaddress = serializers.IPAddressField(source='IpUsage.ipaddress')
-
-    class Meta:
-        model = VirtualMachine
-        fields = ('url', 'id', 'datastore', 'hostsystem', 'network', 'resourcepool', 'ipaddress')

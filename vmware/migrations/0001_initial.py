@@ -10,21 +10,3 @@ class Migration(migrations.Migration):
     dependencies = [
     ]
 
-    operations = [
-        migrations.CreateModel(
-            name='Vcenter',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user', models.CharField(max_length=100)),
-                ('pwd', models.CharField(max_length=100)),
-                ('port', models.CharField(max_length=20)),
-                ('host', models.GenericIPAddressField()),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Virtualmachine',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-            ],
-        ),
-    ]

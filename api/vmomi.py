@@ -104,7 +104,7 @@ class VimAPI(object):
         viewType = [vim.Datastore]
         children = self.get_views(viewType)
 
-#
+
 # def clone_vm(service_instance,
 #              content, template, vm_name, si,
 #              datacenter_name, vm_folder, datastore_name,
